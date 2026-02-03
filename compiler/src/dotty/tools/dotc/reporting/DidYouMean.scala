@@ -12,24 +12,21 @@ import collection.mutable
 object DidYouMean:
 
   def kindOK(sym: Symbol, isType: Boolean, isApplied: Boolean)(using Context): Boolean =
-    if isType then sym.isType
-    else sym.isTerm || isApplied && sym.isClass && !sym.is(ModuleClass)
-      // also count classes if followed by `(` since they have constructor proxies,
-      // but these don't show up separately as members
-      // Note: One need to be careful here not to complete symbols. For instance,
-      // we run into trouble if we ask whether a symbol is a legal value.
+    MemberCollector.kindOK(sym, isType, isApplied)
 
   /** The names of all non-synthetic, non-private members of `site`
    *  that are of the same type/term kind as the missing member.
    */
   def memberCandidates(site: Type, isType: Boolean, isApplied: Boolean)(using Context): collection.Set[Symbol] =
-    for
-      bc <- site.widen.baseClasses.toSet
-      sym <- bc.info.decls.filter(sym =>
-        kindOK(sym, isType, isApplied)
-        && !sym.isConstructor
-        && !sym.flagsUNSAFE.isOneOf(Synthetic | Private))
-    yield sym
+    val config = MemberCollector.Config(
+      isType = isType,
+      isApplied = isApplied,
+      includePrivate = false,
+      includeSynthetic = false,
+      includeConstructors = false,
+      checkAccessibility = false
+    )
+    MemberCollector.collectSymbols(site, config)
 
   case class Binding(name: Name, sym: Symbol, site: Type)
 

@@ -298,7 +298,6 @@ class DottyLanguageServer extends LanguageServer
     /*thisServer.synchronized*/ {}
   }
 
-  // FIXME: share code with NotAMember
   override def completion(params: CompletionParams) = computeAsync { cancelToken =>
     val uri = new URI(params.getTextDocument.getUri)
     val driver = driverFor(uri)
