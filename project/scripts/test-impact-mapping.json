@@ -1,0 +1,417 @@
+{
+  "version": "1.1",
+  "description": "Test impact analysis mapping for Scala 3 CI - Enhanced with full test coverage",
+  "mappings": [
+    {
+      "name": "Parser",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/parsing/**"
+      ],
+      "test_categories": [
+        "pos",
+        "neg",
+        "run"
+      ],
+      "priority": "high"
+    },
+    {
+      "name": "Typer",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/typer/**"
+      ],
+      "test_categories": [
+        "pos",
+        "neg",
+        "run",
+        "neg-custom-args",
+        "pos-custom-args"
+      ],
+      "priority": "high"
+    },
+    {
+      "name": "Transforms",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/transform/**"
+      ],
+      "test_categories": [
+        "pos",
+        "neg",
+        "run",
+        "init",
+        "init-global"
+      ],
+      "priority": "high"
+    },
+    {
+      "name": "Backend JVM",
+      "source_patterns": [
+        "compiler/src/dotty/tools/backend/jvm/**"
+      ],
+      "test_categories": [
+        "run",
+        "pos",
+        "generic-java-signatures"
+      ],
+      "priority": "high"
+    },
+    {
+      "name": "Reporting",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/reporting/**"
+      ],
+      "test_categories": [
+        "neg",
+        "warn",
+        "warn-bootstrapped"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "REPL",
+      "source_patterns": [
+        "repl/**",
+        "compiler-test/dotty/tools/repl/**"
+      ],
+      "test_categories": [
+        "repl"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "Scaladoc",
+      "source_patterns": [
+        "scaladoc/**",
+        "scaladoc-js/**"
+      ],
+      "test_categories": [
+        "scaladoc"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "Presentation Compiler",
+      "source_patterns": [
+        "presentation-compiler/**"
+      ],
+      "test_categories": [
+        "presentation-compiler"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "Language Server",
+      "source_patterns": [
+        "language-server/**"
+      ],
+      "test_categories": [
+        "language-server"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "Library",
+      "source_patterns": [
+        "library/**"
+      ],
+      "test_categories": [
+        "run",
+        "pos",
+        "run-bootstrapped",
+        "pos-bootstrapped"
+      ],
+      "priority": "high"
+    },
+    {
+      "name": "TASTY",
+      "source_patterns": [
+        "tasty/**",
+        "tasty-inspector/**"
+      ],
+      "test_categories": [
+        "run-tasty-inspector",
+        "pos"
+      ],
+      "priority": "high"
+    },
+    {
+      "name": "Staging",
+      "source_patterns": [
+        "staging/**"
+      ],
+      "test_categories": [
+        "run-staging",
+        "pos-staging",
+        "neg-staging"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "SBT Bridge",
+      "source_patterns": [
+        "sbt-bridge/**"
+      ],
+      "test_categories": [
+        "sbt-bridge",
+        "cmdTest-sbt-tests"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "Macros",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/quoted/**",
+        "compiler/src/dotty/tools/dotc/transform/Splicer.scala",
+        "compiler/src/dotty/tools/dotc/transform/PickleQuotes.scala"
+      ],
+      "test_categories": [
+        "pos-macros",
+        "neg-macros",
+        "run-macros"
+      ],
+      "priority": "high"
+    },
+    {
+      "name": "Pattern Matching",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/transform/patmat/**"
+      ],
+      "test_categories": [
+        "patmat",
+        "pos",
+        "neg"
+      ],
+      "priority": "high"
+    },
+    {
+      "name": "Capture Checking",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/cc/**"
+      ],
+      "test_categories": [
+        "pos-custom-args/captures",
+        "neg-custom-args/captures",
+        "run-custom-args/captures"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "Initialization Checker",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/transform/init/**"
+      ],
+      "test_categories": [
+        "init",
+        "init-global"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "Scala.js",
+      "source_patterns": [
+        "compiler/src/dotty/tools/backend/sjs/**",
+        "sjs-compiler-tests/**",
+        "library-js/**"
+      ],
+      "test_categories": [
+        "sjs-junit",
+        "neg-scalajs"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "Java Interop",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/core/classfile/**"
+      ],
+      "test_categories": [
+        "pos-java-interop",
+        "pos-java-interop-separate",
+        "pos-java16+"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "Debug Support",
+      "source_patterns": [
+        "compiler/src/dotty/tools/debug/**"
+      ],
+      "test_categories": [
+        "debug",
+        "debug-custom-args"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "Explicit Nulls",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/core/NullOpsDecorator.scala",
+        "compiler/src/dotty/tools/dotc/typer/Nullables.scala"
+      ],
+      "test_categories": [
+        "explicit-nulls"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "SemanticDB",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/semanticdb/**"
+      ],
+      "test_categories": [
+        "semanticdb"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "Coverage",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/coverage/**"
+      ],
+      "test_categories": [
+        "coverage"
+      ],
+      "priority": "low"
+    },
+    {
+      "name": "Rewrites",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/rewrites/**"
+      ],
+      "test_categories": [
+        "rewrites"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "Printing",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/printing/**"
+      ],
+      "test_categories": [
+        "printing"
+      ],
+      "priority": "low"
+    },
+    {
+      "name": "Inlining",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/inlines/**",
+        "compiler/src/dotty/tools/dotc/transform/Inlining.scala"
+      ],
+      "test_categories": [
+        "pos",
+        "neg",
+        "run"
+      ],
+      "priority": "high"
+    },
+    {
+      "name": "Compiler Plugins",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/plugins/**"
+      ],
+      "test_categories": [
+        "plugins"
+      ],
+      "priority": "low"
+    },
+    {
+      "name": "With Compiler Tests",
+      "source_patterns": [
+        "compiler/test/dotty/tools/dotc/FromTastyTests.scala",
+        "compiler/test/dotty/tools/dotc/BootstrappedOnlyCompilationTests.scala"
+      ],
+      "test_categories": [
+        "pos-with-compiler",
+        "neg-with-compiler",
+        "run-with-compiler"
+      ],
+      "priority": "medium"
+    },
+    {
+      "name": "Benchmarks",
+      "source_patterns": [
+        "bench/**"
+      ],
+      "test_categories": [
+        "bench"
+      ],
+      "priority": "low"
+    },
+    {
+      "name": "Best Effort Compilation",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/core/tasty/BestEffortTasty*.scala"
+      ],
+      "test_categories": [
+        "best-effort"
+      ],
+      "priority": "low"
+    },
+    {
+      "name": "Deep Subtype",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/core/TypeComparer.scala",
+        "compiler/src/dotty/tools/dotc/core/ConstraintHandling.scala"
+      ],
+      "test_categories": [
+        "pos-deep-subtype",
+        "neg-deep-subtype",
+        "run-deep-subtype"
+      ],
+      "priority": "high"
+    },
+    {
+      "name": "Idempotency",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/transform/TreeChecker.scala"
+      ],
+      "test_categories": [
+        "idempotency",
+        "order-idempotency"
+      ],
+      "priority": "low"
+    },
+    {
+      "name": "Linking",
+      "source_patterns": [
+        "compiler/src/dotty/tools/dotc/core/Denotations.scala"
+      ],
+      "test_categories": [
+        "link"
+      ],
+      "priority": "low"
+    },
+    {
+      "name": "Tests Infrastructure",
+      "source_patterns": [
+        "compiler/test/dotty/tools/vulpix/**"
+      ],
+      "test_categories": [
+        "vulpix-tests"
+      ],
+      "priority": "low"
+    }
+  ],
+  "full_suite_triggers": [
+    "project/Build.scala",
+    "project/Dependencies.scala",
+    "project/Versions.scala",
+    "project/MiMaFilters.scala",
+    "project/TastyMiMaFilters.scala",
+    ".github/workflows/**",
+    "compiler/src/dotty/tools/dotc/core/**",
+    "compiler/src/dotty/tools/dotc/Compiler.scala",
+    "compiler/src/dotty/tools/dotc/Run.scala",
+    "compiler/src/dotty/tools/dotc/Driver.scala",
+    "compiler/src/dotty/tools/dotc/config/**",
+    "compiler/src/dotty/tools/dotc/ast/**",
+    "compiler/src/dotty/tools/dotc/util/**",
+    "interfaces/**",
+    "scala2-library-cc/**",
+    "scala2-library-tasty/**"
+  ],
+  "always_run": [
+    "scalafmt"
+  ]
+}

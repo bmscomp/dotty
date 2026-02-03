@@ -1,0 +1,287 @@
+name: Test Impact Analysis
+
+# This workflow runs selective tests based on which files have changed.
+# It analyzes the diff and only runs tests for affected areas.
+# For changes to core compiler or build files, it triggers the full test suite.
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 'release-*'
+      - 'lts-*'
+  workflow_dispatch:
+    inputs:
+      force_full:
+        description: 'Force full test suite'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-impact-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTTY_CI_RUN: true
+  DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+
+jobs:
+  analyze-impact:
+    runs-on: ubuntu-latest
+    outputs:
+      run_full: ${{ steps.analyze.outputs.run_full }}
+      categories: ${{ steps.analyze.outputs.categories }}
+      categories_json: ${{ steps.analyze.outputs.categories_json }}
+      matched_mappings: ${{ steps.analyze.outputs.matched_mappings }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Analyze Changed Files
+        id: analyze
+        run: |
+          # Run the analysis script
+          RESULT=$(./project/scripts/analyze-changed-files.sh)
+          echo "Analysis result: $RESULT"
+
+          # Extract values
+          RUN_FULL=$(echo "$RESULT" | jq -r '.run_full')
+          CATEGORIES=$(echo "$RESULT" | jq -r '.categories | join(",")')
+          CATEGORIES_JSON=$(echo "$RESULT" | jq -c '.categories')
+          MATCHED=$(echo "$RESULT" | jq -r '.matched_mappings | join(",")')
+
+          # Handle force_full input
+          if [[ "${{ github.event.inputs.force_full }}" == "true" ]] || \
+             [[ "${{ contains(github.event.pull_request.body, '[full ci]') }}" == "true" ]]; then
+            RUN_FULL="true"
+            echo "Forcing full suite due to user request"
+          fi
+
+          echo "run_full=$RUN_FULL" >> $GITHUB_OUTPUT
+          echo "categories=$CATEGORIES" >> $GITHUB_OUTPUT
+          echo "categories_json=$CATEGORIES_JSON" >> $GITHUB_OUTPUT
+          echo "matched_mappings=$MATCHED" >> $GITHUB_OUTPUT
+
+          echo "### Test Impact Analysis Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Run Full Suite | $RUN_FULL |" >> $GITHUB_STEP_SUMMARY
+          echo "| Categories | $CATEGORIES |" >> $GITHUB_STEP_SUMMARY
+          echo "| Matched Mappings | $MATCHED |" >> $GITHUB_STEP_SUMMARY
+
+  # Selective tests - only runs if specific areas are affected
+  test-presentation-compiler:
+    needs: analyze-impact
+    if: |
+      needs.analyze-impact.outputs.run_full == 'false' &&
+      contains(needs.analyze-impact.outputs.categories, 'presentation-compiler')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'sbt'
+      - uses: sbt/setup-sbt@v1
+      - name: Test Presentation Compiler
+        run: ./project/scripts/sbt scala3-presentation-compiler/test
+
+  test-scaladoc:
+    needs: analyze-impact
+    if: |
+      needs.analyze-impact.outputs.run_full == 'false' &&
+      contains(needs.analyze-impact.outputs.categories, 'scaladoc')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'sbt'
+      - uses: sbt/setup-sbt@v1
+      - name: Test Scaladoc
+        run: ./project/scripts/sbt scaladoc/test
+
+  test-repl:
+    needs: analyze-impact
+    if: |
+      needs.analyze-impact.outputs.run_full == 'false' &&
+      contains(needs.analyze-impact.outputs.categories, 'repl')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'sbt'
+      - uses: sbt/setup-sbt@v1
+      - name: Test REPL
+        run: ./project/scripts/sbt scala3-repl/test
+
+  test-language-server:
+    needs: analyze-impact
+    if: |
+      needs.analyze-impact.outputs.run_full == 'false' &&
+      contains(needs.analyze-impact.outputs.categories, 'language-server')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'sbt'
+      - uses: sbt/setup-sbt@v1
+      - name: Test Language Server
+        run: ./project/scripts/sbt scala3-language-server/test
+
+  test-compiler-pos:
+    needs: analyze-impact
+    if: |
+      needs.analyze-impact.outputs.run_full == 'false' &&
+      contains(needs.analyze-impact.outputs.categories, 'pos')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'sbt'
+      - uses: sbt/setup-sbt@v1
+      - name: Compile pos tests
+        run: ./project/scripts/sbt "scala3-compiler-bootstrapped/testOnly dotty.tools.dotc.CompilationTests -- -t pos"
+
+  test-compiler-neg:
+    needs: analyze-impact
+    if: |
+      needs.analyze-impact.outputs.run_full == 'false' &&
+      contains(needs.analyze-impact.outputs.categories, 'neg')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'sbt'
+      - uses: sbt/setup-sbt@v1
+      - name: Run neg tests
+        run: ./project/scripts/sbt "scala3-compiler-bootstrapped/testOnly dotty.tools.dotc.CompilationTests -- -t negAll"
+
+  test-compiler-run:
+    needs: analyze-impact
+    if: |
+      needs.analyze-impact.outputs.run_full == 'false' &&
+      contains(needs.analyze-impact.outputs.categories, 'run')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'sbt'
+      - uses: sbt/setup-sbt@v1
+      - name: Run tests
+        run: ./project/scripts/sbt "scala3-compiler-bootstrapped/testOnly dotty.tools.dotc.CompilationTests -- -t runAll"
+
+  test-macros:
+    needs: analyze-impact
+    if: |
+      needs.analyze-impact.outputs.run_full == 'false' &&
+      (
+        contains(needs.analyze-impact.outputs.categories, 'pos-macros') ||
+        contains(needs.analyze-impact.outputs.categories, 'neg-macros') ||
+        contains(needs.analyze-impact.outputs.categories, 'run-macros')
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'sbt'
+      - uses: sbt/setup-sbt@v1
+      - name: Run macro tests
+        run: ./project/scripts/sbt "scala3-compiler-bootstrapped/testOnly dotty.tools.dotc.BootstrappedOnlyCompilationTests -- -t *macro*"
+
+  test-staging:
+    needs: analyze-impact
+    if: |
+      needs.analyze-impact.outputs.run_full == 'false' &&
+      (
+        contains(needs.analyze-impact.outputs.categories, 'run-staging') ||
+        contains(needs.analyze-impact.outputs.categories, 'pos-staging') ||
+        contains(needs.analyze-impact.outputs.categories, 'neg-staging')
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'sbt'
+      - uses: sbt/setup-sbt@v1
+      - name: Run staging tests
+        run: ./project/scripts/sbt "scala3-compiler-bootstrapped/testOnly dotty.tools.dotc.BootstrappedOnlyCompilationTests -- -t *staging*"
+
+  # Summary job - reports overall status
+  test-impact-summary:
+    needs:
+      - analyze-impact
+      - test-presentation-compiler
+      - test-scaladoc
+      - test-repl
+      - test-language-server
+      - test-compiler-pos
+      - test-compiler-neg
+      - test-compiler-run
+      - test-macros
+      - test-staging
+    if: always() && needs.analyze-impact.outputs.run_full == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summary
+        run: |
+          echo "### Selective Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Categories tested: ${{ needs.analyze-impact.outputs.categories }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Matched mappings: ${{ needs.analyze-impact.outputs.matched_mappings }}" >> $GITHUB_STEP_SUMMARY
+
+  # Fallback to full suite when needed
+  trigger-full-suite:
+    needs: analyze-impact
+    if: needs.analyze-impact.outputs.run_full == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notice
+        run: |
+          echo "### Full Test Suite Required" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Changes detected in core files that require full test suite." >> $GITHUB_STEP_SUMMARY
+          echo "Please ensure the main CI workflow passes." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Use the **Dotty** workflow for comprehensive testing." >> $GITHUB_STEP_SUMMARY
